@@ -1,4 +1,4 @@
 *.pyc
 .#kate-*
-*.config
+#*.config
 *cscope*
