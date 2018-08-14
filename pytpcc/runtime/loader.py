@@ -73,6 +73,7 @@ class Loader:
     ## ==============================================
     def loadItems(self):
         ## Select 10% of the rows to be marked "original"
+        self.scaleParameters.items = 225000
         originalRows = rand.selectUniqueIds(self.scaleParameters.items / 10, 1, self.scaleParameters.items)
         
         ## Load all of the items

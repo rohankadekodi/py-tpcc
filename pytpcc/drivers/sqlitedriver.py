@@ -173,6 +173,7 @@ class SqliteDriver(AbstractDriver):
         ol_delivery_d = params["ol_delivery_d"]
 
         result = [ ]
+
         for d_id in range(1, constants.DISTRICTS_PER_WAREHOUSE+1):
             self.cursor.execute(q["getNewOrder"], [d_id, w_id])
             newOrder = self.cursor.fetchone()
@@ -181,6 +182,7 @@ class SqliteDriver(AbstractDriver):
                 continue
             assert len(newOrder) > 0
             no_o_id = newOrder[0]
+
             
             self.cursor.execute(q["getCId"], [no_o_id, d_id, w_id])
             c_id = self.cursor.fetchone()[0]
@@ -200,11 +202,13 @@ class SqliteDriver(AbstractDriver):
             assert ol_total > 0.0
 
             self.cursor.execute(q["updateCustomer"], [ol_total, c_id, d_id, w_id])
-
+            
             result.append((d_id, no_o_id))
+            
         ## FOR
-
+            
         self.conn.commit()
+
         return result
 
     ## ----------------------------------------------
