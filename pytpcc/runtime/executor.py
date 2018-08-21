@@ -41,13 +41,13 @@ from pprint import pprint,pformat
 import constants
 from util import *
 
-
 class Executor:
     
     def __init__(self, driver, scaleParameters, stop_on_error = True):
         self.driver = driver
         self.scaleParameters = scaleParameters
         self.stop_on_error = stop_on_error
+        self.next_o_id = 1
     ## DEF
     
     def execute(self, duration):
@@ -57,6 +57,22 @@ class Executor:
         start = r.startBenchmark()
         debug = logging.getLogger().isEnabledFor(logging.DEBUG)
 
+        txn,params = (constants.TransactionTypes.INDEX_NEW_OPT_ORDER, self.generateNewOptOrderParams())
+        txn_id = r.startTransaction(txn)
+
+        #print "Performing transaction"
+        if debug: logging.debug("Executing '%s' transaction" % txn)
+        try:
+            self.driver.executeTransaction(txn, params)
+        except KeyboardInterrupt:
+            return -1
+        except (Exception, AssertionError), ex:
+            logging.warn("Failed to execute Transaction '%s': %s" % (txn, ex))
+            if debug: traceback.print_exc(file=sys.stdout)
+            if self.stop_on_error: raise
+            r.abortTransaction(txn_id)             
+        r.stopTransaction(txn_id)
+        
         while (time.time() - start) <= duration:
             txn, params = self.doOne()
             txn_id = r.startTransaction(txn)
@@ -78,7 +94,7 @@ class Executor:
             
             r.stopTransaction(txn_id)
         ## WHILE
-            
+        
         r.stopBenchmark()
         return (r)
     ## DEF
@@ -89,6 +105,7 @@ class Executor:
         ## This is not strictly accurate: The requirement is for certain
         ## *minimum* percentages to be maintained. This is close to the right
         ## thing, but not precisely correct. See TPC-C 5.2.4 (page 68).
+        """
         x = rand.number(1, 100)
         params = None
         txn = None
@@ -103,7 +120,8 @@ class Executor:
         else: ## 45%
             assert x > 100 - 45
             txn, params = (constants.TransactionTypes.NEW_ORDER, self.generateNewOrderParams())
-        
+        """
+        txn, params = (constants.TransactionTypes.UPDATE_NEW_OPT_ORDER, self.generateUpdateNewOptOrderParams())    
         return (txn, params)
     ## DEF
 
@@ -157,6 +175,31 @@ class Executor:
         return makeParameterDict(locals(), "w_id", "d_id", "c_id", "o_entry_d", "i_ids", "i_w_ids", "i_qtys")
     ## DEF
 
+    ## ----------------------------------------------
+    ## generateUpdateNewOptOrderParams
+    ## ----------------------------------------------
+    def generateUpdateNewOptOrderParams(self):
+        """Return parameters for NEW_ORDER"""
+        o_id = rand.number(1,249999)
+        w_id = self.makeWarehouseId()
+        d_id = self.makeDistrictId()
+        c_id = self.makeCustomerId()
+
+        return makeParameterDict(locals(), "o_id", "w_id", "d_id", "c_id")
+
+    
+    ## ----------------------------------------------
+    ## generateNewOptOrderParams
+    ## ----------------------------------------------
+    def generateNewOptOrderParams(self):
+        """Return parameters for NEW_ORDER"""
+        next_o_id = 0
+        w_id = self.makeWarehouseId()
+        d_id = self.makeDistrictId()
+        c_id = self.makeCustomerId()
+
+        return makeParameterDict(locals(), "next_o_id", "w_id", "d_id", "c_id")
+    
     ## ----------------------------------------------
     ## generateOrderStatusParams
     ## ----------------------------------------------

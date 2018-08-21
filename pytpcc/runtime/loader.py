@@ -65,7 +65,7 @@ class Loader:
             self.loadWarehouse(w_id)
             self.handle.loadFinishWarehouse(w_id)
         ## FOR
-        
+                       
         return (None)
 
     ## ==============================================
@@ -73,7 +73,7 @@ class Loader:
     ## ==============================================
     def loadItems(self):
         ## Select 10% of the rows to be marked "original"
-        self.scaleParameters.items = 225000
+        #self.scaleParameters.items = 225000
         originalRows = rand.selectUniqueIds(self.scaleParameters.items / 10, 1, self.scaleParameters.items)
         
         ## Load all of the items
@@ -120,16 +120,19 @@ class Loader:
             ## customers. For the "real" thing this will be equivalent
             cIdPermutation = [ ]
 
-            for c_id in range(1, self.scaleParameters.customersPerDistrict+1):
+            for c_id in range(1, 250000):
+                """
                 badCredit = (c_id in selectedRows)
                 c_tuples.append(self.generateCustomer(w_id, d_id, c_id, badCredit, True))
-                h_tuples.append(self.generateHistory(w_id, d_id, c_id))
+                h_tuples.append(self.generateHistory(w_id, d_id, c_id))                
+                """
                 cIdPermutation.append(c_id)
             ## FOR
             assert cIdPermutation[0] == 1
             assert cIdPermutation[self.scaleParameters.customersPerDistrict - 1] == self.scaleParameters.customersPerDistrict
             shuffle(cIdPermutation)
-            
+
+            """
             o_tuples = [ ]
             ol_tuples = [ ]
             no_tuples = [ ]
@@ -149,17 +152,29 @@ class Loader:
                 ## This is a new order: make one for it
                 if newOrder: no_tuples.append([o_id, d_id, w_id])
             ## FOR
+            """
             
+            no_opt_tuples = []
+
+            for o_id in range(1, 250000):
+                no_opt_tuples.append([o_id, w_id, d_id, cIdPermutation[o_id - 1]])
+
+                
+        """
             self.handle.loadTuples(constants.TABLENAME_DISTRICT, d_tuples)
             self.handle.loadTuples(constants.TABLENAME_CUSTOMER, c_tuples)
             self.handle.loadTuples(constants.TABLENAME_ORDERS, o_tuples)
             self.handle.loadTuples(constants.TABLENAME_ORDER_LINE, ol_tuples)
             self.handle.loadTuples(constants.TABLENAME_NEW_ORDER, no_tuples)
             self.handle.loadTuples(constants.TABLENAME_HISTORY, h_tuples)
-            self.handle.loadFinishDistrict(w_id, d_id)
+        """
+        self.handle.loadTuples(constants.TABLENAME_NEW_OPT_ORDER, no_opt_tuples)
+        self.handle.loadFinishDistrict(w_id, d_id)
+        
         ## FOR
         
         ## Select 10% of the stock to be marked "original"
+        """
         s_tuples = [ ]
         selectedRows = rand.selectUniqueIds(self.scaleParameters.items / 10, 1, self.scaleParameters.items)
         total_tuples = 0
@@ -175,6 +190,7 @@ class Loader:
         if len(s_tuples) > 0:
             logging.debug("LOAD - %s [W_ID=%d]: %5d / %d" % (constants.TABLENAME_STOCK, w_id, total_tuples, self.scaleParameters.items))
             self.handle.loadTuples(constants.TABLENAME_STOCK, s_tuples)
+        """
     ## DEF
 
     ## ==============================================

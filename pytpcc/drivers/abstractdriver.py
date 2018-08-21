@@ -102,6 +102,12 @@ class AbstractDriver(object):
             result = self.doDelivery(params)
         elif constants.TransactionTypes.NEW_ORDER == txn:
             result = self.doNewOrder(params)
+        elif constants.TransactionTypes.NEW_OPT_ORDER == txn:
+            result = self.doNewOptOrder(params)
+        elif constants.TransactionTypes.INDEX_NEW_OPT_ORDER == txn:
+            result = self.doIndexNewOptOrder(params)
+        elif constants.TransactionTypes.UPDATE_NEW_OPT_ORDER == txn:
+            result = self.doUpdateNewOptOrder(params)
         elif constants.TransactionTypes.ORDER_STATUS == txn:
             result = self.doOrderStatus(params)
         elif constants.TransactionTypes.PAYMENT == txn:
@@ -134,6 +140,26 @@ class AbstractDriver(object):
         """
         raise NotImplementedError("%s does not implement doNewOrder" % (self.driver_name))
 
+    def doNewOptOrder(self, params):
+        """Execute NEW_OPT_ORDER Transaction
+        Parameters Dict:
+            next_o_id
+            w_id
+            d_id
+            c_id
+        """
+
+    def doUpdateNewOptOrder(self, params):
+        """Execute UPDATE_NEW_OPT_ORDER Transaction
+        Parameters Dict:
+            o_id
+            w_id
+            d_id
+            c_id
+        """
+
+        raise NotImplementedError("%s does not implement doUpdateNewOptOrder" % (self.driver_name))
+    
     def doOrderStatus(self, params):
         """Execute ORDER_STATUS Transaction
         Parameters Dict:

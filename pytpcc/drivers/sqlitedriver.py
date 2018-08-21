@@ -41,6 +41,15 @@ import constants
 from abstractdriver import *
 
 TXN_QUERIES = {
+    "NEW_OPT_ORDER": {
+        "createNewOptOrder": "INSERT INTO NEW_OPT_ORDER (NO_O_ID, NO_D_ID, NO_W_ID, NO_C_ID) VALUES (?, ?, ?, ?)", # d_next_o_id, d_id, w_id, c_id
+    },
+    "UPDATE_NEW_OPT_ORDER": {
+        "updateNewOptOrder": "UPDATE NEW_OPT_ORDER SET NO_C_ID = ? WHERE NO_O_ID = ? AND NO_D_ID = ? AND NO_W_ID = ?", # o_carrier_id, no_o_id, d_id, w_id
+    },
+    "INDEX_NEW_OPT_ORDER": {
+        "indexNewOptOrder": "CREATE INDEX ind_customer ON NEW_OPT_ORDER (NO_C_ID)",
+    },
     "DELIVERY": {
         "getNewOrder": "SELECT NO_O_ID FROM NEW_ORDER WHERE NO_D_ID = ? AND NO_W_ID = ? AND NO_O_ID > -1 LIMIT 1", #
         "deleteNewOrder": "DELETE FROM NEW_ORDER WHERE NO_D_ID = ? AND NO_W_ID = ? AND NO_O_ID = ?", # d_id, w_id, no_o_id
@@ -211,6 +220,49 @@ class SqliteDriver(AbstractDriver):
 
         return result
 
+    ## ---------------------------------------------
+    ## doUpdateNewOptOrder
+    ## ---------------------------------------------
+    def doUpdateNewOptOrder(self, params):
+        q = TXN_QUERIES["UPDATE_NEW_OPT_ORDER"]
+
+        o_id = params["o_id"]
+        w_id = params["w_id"]
+        d_id = params["d_id"]
+        c_id = params["c_id"]
+
+        self.cursor.execute(q["updateNewOptOrder"], [c_id, o_id, d_id, w_id])
+        
+        ## Commit!
+        self.conn.commit()
+    
+    ## ---------------------------------------------
+    ## doNewOptOrder
+    ## ---------------------------------------------
+    def doNewOptOrder(self, params):
+        q = TXN_QUERIES["NEW_OPT_ORDER"]
+
+        next_o_id = params["next_o_id"]
+        w_id = params["w_id"]
+        d_id = params["d_id"]
+        c_id = params["c_id"]
+        
+        self.cursor.execute(q["createNewOptOrder"], [next_o_id, d_id, w_id, c_id])
+        
+        ## Commit!
+        self.conn.commit()
+
+    ## ---------------------------------------------
+    ## doNewOptOrder
+    ## ---------------------------------------------
+    def doIndexNewOptOrder(self, params):
+        q = TXN_QUERIES["INDEX_NEW_OPT_ORDER"]
+        
+        self.cursor.execute(q["indexNewOptOrder"])
+        
+        ## Commit!
+        self.conn.commit()
+        
     ## ----------------------------------------------
     ## doNewOrder
     ## ----------------------------------------------
